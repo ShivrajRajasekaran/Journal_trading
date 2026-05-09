@@ -1,16 +1,10 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import WinRateTracker from "@/components/WinRateTracker";
 import JournalTable from "@/components/JournalTable";
 import type { Trade } from "@/lib/schema";
-
-type Stats = {
-  total: number;
-  wins: number;
-  winRate: number;
-  totalPnl: number;
-};
 
 export default function DashboardPage() {
   const tradesQuery = useQuery<Trade[]>({
@@ -22,14 +16,14 @@ export default function DashboardPage() {
     },
   });
 
-  const statsQuery = useQuery<Stats>({
-    queryKey: ["stats"],
-    queryFn: async () => {
-      const res = await fetch("/api/stats", { cache: "no-store" });
-      if (!res.ok) throw new Error("Failed to fetch stats");
-      return res.json();
-    },
-  });
+  const stats = useMemo(() => {
+    const trades = tradesQuery.data || [];
+    const total = trades.length;
+    const wins = trades.filter((t) => t.result === "Win").length;
+    const winRate = total > 0 ? (wins / total) * 100 : 0;
+    const totalPnl = trades.reduce((sum, t) => sum + parseFloat(t.pnl), 0);
+    return { total, wins, winRate, totalPnl };
+  }, [tradesQuery.data]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -41,16 +35,16 @@ export default function DashboardPage() {
       </div>
 
       {/* Win Rate Tracker */}
-      {statsQuery.isLoading ? (
+      {tradesQuery.isLoading ? (
         <div className="h-48 bg-slate-100 dark:bg-slate-800 rounded-xl animate-pulse" />
-      ) : statsQuery.data ? (
+      ) : (
         <WinRateTracker
-          total={statsQuery.data.total}
-          wins={statsQuery.data.wins}
-          winRate={statsQuery.data.winRate}
-          totalPnl={statsQuery.data.totalPnl}
+          total={stats.total}
+          wins={stats.wins}
+          winRate={stats.winRate}
+          totalPnl={stats.totalPnl}
         />
-      ) : null}
+      )}
 
       {/* Journal Table */}
       <div>
