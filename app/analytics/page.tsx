@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
   const statsQuery = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: async () => {
-      const res = await fetch("/api/stats");
+      const res = await fetch("/api/stats", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch stats");
       return res.json();
     },

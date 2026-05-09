@@ -16,7 +16,7 @@ export default function DashboardPage() {
   const tradesQuery = useQuery<Trade[]>({
     queryKey: ["trades"],
     queryFn: async () => {
-      const res = await fetch("/api/trades");
+      const res = await fetch("/api/trades", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch trades");
       return res.json();
     },
@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const statsQuery = useQuery<Stats>({
     queryKey: ["stats"],
     queryFn: async () => {
-      const res = await fetch("/api/stats");
+      const res = await fetch("/api/stats", { cache: "no-store" });
       if (!res.ok) throw new Error("Failed to fetch stats");
       return res.json();
     },
